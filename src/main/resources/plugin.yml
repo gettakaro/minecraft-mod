@@ -1,0 +1,6 @@
+name: TakaroPlugin
+main: com.takaro.takaroplugin.TakaroPlugin
+version: 1.0.0
+author: Sean Stoves
+website: https://github.com/SaltyZombies/TakaroPlugin
+api-version: 1.21
