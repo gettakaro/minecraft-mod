@@ -27,12 +27,13 @@ public class TakaroPlugin extends JavaPlugin {
         int port = getConfig().getInt("websocket.port", 1680); // Default to port 1680 if not specified
         String hostname = getConfig().getString("websocket.hostname", "0.0.0.0"); // Default to localhost if not specified
         
-
-        try {
-            WebSocket.startWebSocketServer(hostname, port, getLogger());
-        } catch (IOException | NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                WebSocket.startWebSocketServer(hostname, port, getLogger());
+            } catch (IOException | NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public Location getPlayerLocation(String playerName) {
