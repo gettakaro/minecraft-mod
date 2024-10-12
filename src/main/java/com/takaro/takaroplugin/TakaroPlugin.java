@@ -1,6 +1,11 @@
 package com.takaro.takaroplugin;
 
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -60,4 +65,89 @@ public class TakaroPlugin extends JavaPlugin {
 
         getLogger().info("Teleported " + playerName + " to " + x + ", " + y + ", " + z);
     }
+
+    public CommandOutput executeConsoleCommand(String rawCommand) {
+        String encodedCommand = java.net.URLEncoder.encode(rawCommand, java.nio.charset.StandardCharsets.UTF_8);
+        getLogger().info("Executing command: \"" + rawCommand + "\"");
+
+        CommandOutput commandOutput = new CommandOutput("Command execution failed", false);
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            boolean success = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), encodedCommand);
+            commandOutput.rawResult = success ? "Command executed successfully" : "Command execution failed";
+            commandOutput.success = success;
+            getLogger().info("Command output: " + commandOutput.getRawResult());
+        });
+        return commandOutput;
+    }
+
+    public class CommandOutput {
+        private String rawResult;
+        private boolean success;
+
+        public CommandOutput(String rawResult, boolean success) {
+            this.rawResult = rawResult;
+            this.success = success;
+        }
+
+        public String getRawResult() {
+            return rawResult;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+    }
+
+    public void kickPlayer(String playerName, String reason) {
+        String command = "kick " + playerName + " " + reason;
+        executeConsoleCommand(command);
+    }
+
+    public void banPlayer(String playerName, String reason, String expiresAt) {
+        if (expiresAt == null || expiresAt.isEmpty()) {
+            expiresAt = "2521-01-01 00:00:00";
+        }
+
+        LocalDateTime expiresAtDate = LocalDateTime.parse(expiresAt);
+        LocalDateTime now = LocalDateTime.now();
+        Duration duration = Duration.between(now, expiresAtDate);
+
+        String unit = "minute";
+        long durationValue = duration.toMinutes();
+
+        if (durationValue >= 60) {
+            unit = "hour";
+            durationValue = duration.toHours();
+        }
+
+        if (durationValue >= 24) {
+            unit = "day";
+            durationValue = duration.toDays();
+        }
+
+        if (durationValue >= 7) {
+            unit = "week";
+            durationValue = duration.toDays() / 7;
+        }
+
+        if (durationValue >= 30) {
+            unit = "month";
+            durationValue = duration.toDays() / 30;
+        }
+
+        if (durationValue >= 365) {
+            unit = "year";
+            durationValue = duration.toDays() / 365;
+        }
+
+        String command = "ban add " + playerName + " " + durationValue + " " + unit + " " + reason;
+        executeConsoleCommand(command);
+    }
+
+    public void unbanPlayer(String playerName) {
+        String command = "ban remove " + playerName;
+        executeConsoleCommand(command);
+    }
+
+    
 }
