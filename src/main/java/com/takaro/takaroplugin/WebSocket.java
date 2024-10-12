@@ -18,7 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class WebSocket extends JavaPlugin {
     public static void startWebSocketServer(String host, int port) throws IOException, NoSuchAlgorithmException {
-        ServerSocket server = new ServerSocket(port, 50, InetAddress.getByAddress(host.getBytes("UTF-8")));
+        ServerSocket server = new ServerSocket(port, 50, InetAddress.getByName(host));
         try {
             System.out.println("Server has started on " + host + ":" + port + ".\r\nWaiting for a connection…");
             Socket client = server.accept();
