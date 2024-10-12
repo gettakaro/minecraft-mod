@@ -29,11 +29,12 @@ public class TakaroPlugin extends JavaPlugin {
         
 
         try {
-            WebSocket.startWebSocketServer(hostname, port);
+            WebSocket.startWebSocketServer(hostname, port, getLogger());
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
+
     public Location getPlayerLocation(String playerName) {
         Player player = Bukkit.getPlayer(playerName);
         if (player == null) {

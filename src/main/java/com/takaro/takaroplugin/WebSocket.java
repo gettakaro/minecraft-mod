@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Scanner;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -17,12 +18,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 
 public class WebSocket extends JavaPlugin {
-    public static void startWebSocketServer(String host, int port) throws IOException, NoSuchAlgorithmException {
+    public static void startWebSocketServer(String host, int port, Logger logger) throws IOException, NoSuchAlgorithmException {
         ServerSocket server = new ServerSocket(port, 50, InetAddress.getByName(host));
         try {
-            System.out.println("Server has started on " + host + ":" + port + ".\r\nWaiting for a connection…");
+            logger.info("Server has started on " + host + ":" + port + ".\r\nWaiting for a connection…");
             Socket client = server.accept();
-            System.out.println("A client connected.");
+            logger.info("A client connected.");
 
             InputStream in = client.getInputStream();
             OutputStream out = client.getOutputStream();
