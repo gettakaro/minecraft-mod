@@ -2,6 +2,8 @@ package com.takaro.takaroplugin;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -9,12 +11,22 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import com.takaro.takaroplugin.WebSocket;
 
 
 public class TakaroPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
+        saveDefaultConfig();
+
         getLogger().info("TakaroPlugin has been enabled!");
+        int port = getConfig().getInt("websocket.port", 1680); // Default to port 1680 if not specified
+
+        try {
+            WebSocket.startWebSocketServer(port);
+        } catch (IOException | NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
     }
     public Location getPlayerLocation(String playerName) {
         Player player = Bukkit.getPlayer(playerName);
