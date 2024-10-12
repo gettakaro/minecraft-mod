@@ -23,7 +23,6 @@ repositories {
         name = "papermc"
         url = "https://papermc.io/repo/repository/maven-public/"
     }
-
 }
 
 dependencies {
