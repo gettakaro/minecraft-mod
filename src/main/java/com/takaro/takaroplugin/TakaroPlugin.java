@@ -25,9 +25,11 @@ public class TakaroPlugin extends JavaPlugin {
 
         getLogger().info("TakaroPlugin has been enabled!");
         int port = getConfig().getInt("websocket.port", 1680); // Default to port 1680 if not specified
+        String hostname = getConfig().getString("websocket.hostname", "0.0.0.0"); // Default to localhost if not specified
+        
 
         try {
-            WebSocket.startWebSocketServer(port);
+            WebSocket.startWebSocketServer(hostname, port);
         } catch (IOException | NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

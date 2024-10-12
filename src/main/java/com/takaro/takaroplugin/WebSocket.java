@@ -3,6 +3,7 @@ package com.takaro.takaroplugin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.MessageDigest;
@@ -16,10 +17,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 
 public class WebSocket extends JavaPlugin {
-    public static void startWebSocketServer(int port) throws IOException, NoSuchAlgorithmException {
-        ServerSocket server = new ServerSocket(port);
+    public static void startWebSocketServer(String host, int port) throws IOException, NoSuchAlgorithmException {
+        ServerSocket server = new ServerSocket(port, 50, InetAddress.getByAddress(host.getBytes("UTF-8")));
         try {
-            System.out.println("Server has started on 127.0.0.1:" + port + ".\r\nWaiting for a connection…");
+            System.out.println("Server has started on " + host + ":" + port + ".\r\nWaiting for a connection…");
             Socket client = server.accept();
             System.out.println("A client connected.");
 
