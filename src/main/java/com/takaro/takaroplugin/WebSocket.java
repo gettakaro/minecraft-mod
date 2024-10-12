@@ -19,7 +19,7 @@ public class WebSocket extends JavaPlugin {
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        int port = getConfig().getInt("websocket.port", 80); // Default to port 80 if not specified
+        int port = getConfig().getInt("websocket.port", 1680); // Default to port 1680 if not specified
 
         try {
             startWebSocketServer(port);
