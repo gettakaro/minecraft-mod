@@ -16,7 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 
 public class WebSocket extends JavaPlugin {
-    public void startWebSocketServer(int port) throws IOException, NoSuchAlgorithmException {
+    public static void startWebSocketServer(int port) throws IOException, NoSuchAlgorithmException {
         ServerSocket server = new ServerSocket(port);
         try {
             System.out.println("Server has started on 127.0.0.1:" + port + ".\r\nWaiting for a connection…");
