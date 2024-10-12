@@ -28,7 +28,15 @@ public class WebSocket extends JavaPlugin {
         InputStream in = client.getInputStream();
         OutputStream out = client.getOutputStream();
 
-        // Read the client's request
+        // Check for ping message and respond with pong
+        byte[] pingBuffer = new byte[4];
+        in.read(pingBuffer);
+        String clientRequest = new String(pingBuffer, "UTF-8");
+        if (clientRequest.contains("ping")) {
+            String pongResponse = "pong";
+            out.write(pongResponse.getBytes("UTF-8"));
+        }
+
         Scanner s = new Scanner(in, "UTF-8");
         String data = s.useDelimiter("\\r\\n\\r\\n").next();
         Matcher get = Pattern.compile("^GET").matcher(data);
