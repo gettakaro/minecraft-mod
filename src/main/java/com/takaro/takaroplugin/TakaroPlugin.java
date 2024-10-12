@@ -17,7 +17,11 @@ import com.takaro.takaroplugin.WebSocket;
 public class TakaroPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
+        getConfig().options().copyDefaults(true);
         saveDefaultConfig();
+        getConfig().options().setHeader(List.of("Config file for TakaroPlugin"));
+        getConfig().options().pathSeparator('/');
+        getConfig().options().configuration().set("config-location", "./plugins/TakaroPlugin/config.yml");
 
         getLogger().info("TakaroPlugin has been enabled!");
         int port = getConfig().getInt("websocket.port", 1680); // Default to port 1680 if not specified
