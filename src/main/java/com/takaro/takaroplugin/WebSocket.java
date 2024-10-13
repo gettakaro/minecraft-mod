@@ -27,42 +27,27 @@ public class WebSocket extends JavaPlugin {
 
         InputStream in = client.getInputStream();
         OutputStream out = client.getOutputStream();
-
-        // Check for ping message and respond with pong
-        byte[] pingBuffer = new byte[4];
-        in.read(pingBuffer);
-        String clientRequest = new String(pingBuffer, "UTF-8");
-        if (clientRequest.contains("ping")) {
-            String pongResponse = "pong";
-            out.write(pongResponse.getBytes("UTF-8"));
-        }
-
-        Scanner s = new Scanner(in, "UTF-8");
-        String data = s.useDelimiter("\\r\\n\\r\\n").next();
-        Matcher get = Pattern.compile("^GET").matcher(data);
-        if (get.find()) {
-            Matcher match = Pattern.compile("Sec-WebSocket-Key: (.*)").matcher(data);
-            match.find();
-            byte[] response = ("HTTP/1.1 101 Switching Protocols\r\n"
-                    + "Connection: Upgrade\r\n"
-                    + "Upgrade: websocket\r\n"
-                    + "Sec-WebSocket-Accept: "
-                    + Base64.getEncoder().encodeToString(
-                    MessageDigest.getInstance("SHA-1").digest(
-                            (match.group(1) + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
-                                    .getBytes("UTF-8")))
-                    + "\r\n\r\n")
-                    .getBytes("UTF-8");
-
-            out.write(response, 0, response.length);
-        }
-
-        // Now you can read/write data frames from/to the client
-        // This is a simple echo server example
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = in.read(buffer)) != -1) {
-            out.write(buffer, 0, bytesRead);
+        Scanner scanner = new Scanner(in, "UTF-8");
+        while (scanner.hasNextLine()) {
+            String command = scanner.nextLine();
+            switch (command) {
+            case "ping":
+                String pongResponse = "pong";
+                out.write(pongResponse.getBytes("UTF-8"));
+                break;
+            case "hello":
+                String helloResponse = "Hello, client!";
+                out.write(helloResponse.getBytes("UTF-8"));
+                break;
+            case "time":
+                String timeResponse = "Current time: " + System.currentTimeMillis();
+                out.write(timeResponse.getBytes("UTF-8"));
+                break;
+            default:
+                String unknownResponse = "Unknown command: " + command;
+                out.write(unknownResponse.getBytes("UTF-8"));
+                break;
+            }
         }
     }
 }
