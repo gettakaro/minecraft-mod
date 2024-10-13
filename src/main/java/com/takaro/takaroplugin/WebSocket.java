@@ -26,10 +26,35 @@ public class WebSocket extends JavaPlugin {
                     logger.info("Server has started on " + host + ":" + port + ".\r\nWaiting for a connection…");
                     Socket client = server.accept();
                     logger.info("A client connected.");
+                    logger.info("Client address: " + client.getInetAddress().getHostAddress());
+                    logger.info("Client port: " + client.getPort());
 
                     InputStream in = client.getInputStream();
                     OutputStream out = client.getOutputStream();
+                    logger.info("Reading client handshake...");
                     Scanner scanner = new Scanner(in, "UTF-8");
+                    String data = scanner.useDelimiter("\\r\\n\\r\\n").next();
+                    logger.info("Client handshake data: " + data);
+
+                    Matcher get = Pattern.compile("^GET").matcher(data);
+                    if (get.find()) {
+                        Matcher match = Pattern.compile("Sec-WebSocket-Key: (.*)").matcher(data);
+                        match.find();
+                        String key = match.group(1).trim();
+                        logger.info("WebSocket key: " + key);
+
+                        MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+                        String responseKey = Base64.getEncoder().encodeToString(sha1.digest((key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").getBytes("UTF-8")));
+                        logger.info("Response key: " + responseKey);
+
+                        String response = "HTTP/1.1 101 Switching Protocols\r\n"
+                                + "Connection: Upgrade\r\n"
+                                + "Upgrade: websocket\r\n"
+                                + "Sec-WebSocket-Accept: " + responseKey + "\r\n\r\n";
+                        out.write(response.getBytes("UTF-8"));
+                        logger.info("Handshake response sent.");
+                    }
+                    
                     while (scanner.hasNextLine()) {
                     String command = scanner.nextLine();
                     switch (command) {
@@ -53,6 +78,9 @@ public class WebSocket extends JavaPlugin {
                     }
                 } catch (IOException e) {
                     logger.severe("Server error: " + e.getMessage());
+                } catch (NoSuchAlgorithmException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
         }).start();
