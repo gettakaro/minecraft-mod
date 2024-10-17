@@ -1,14 +1,18 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2' // Shadow plugin for bundling dependencies
 }
 
-group 'com.takaro'
-version = System.getenv("GITHUB_REF")?.replace("refs/tags/", "") ?: "1.0.0-SNAPSHOT"
+group 'com.takaro' // Retaining group from original build.gradle
+version = System.getenv("GITHUB_REF")?.replace("refs/tags/", "") ?: "dev-SNAPSHOT" // Retaining version logic from original build.gradle
 
 repositories {
     mavenCentral()
     maven {
         url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    maven {
+        url = 'https://oss.sonatype.org/content/repositories/snapshots'
     }
     maven {
         url = 'https://maven.enginehub.org/repo/'
@@ -17,26 +21,37 @@ repositories {
         url = 'https://repo.codemc.org/repository/maven-public/'
     }
     maven {
-        url = 'https://mvnrepository.com/artifact/'
-    }
-    maven {
         name = "papermc"
         url = "https://papermc.io/repo/repository/maven-public/"
     }
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT'
-    implementation 'com.corundumstudio.socketio:netty-socketio:2.0.11'
-    implementation 'org.yaml:snakeyaml:2.2'
+    compileOnly 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT' // Retaining Spigot API version from original build.gradle
+    implementation 'org.java-websocket:Java-WebSocket:1.5.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.17.1'
+    implementation 'org.slf4j:slf4j-simple:1.7.25'
+    implementation 'com.google.code.gson:gson:2.8.9'
 }
 
 processResources {
-    filesMatching('plugin.yml') {
+    filesMatching('**/*.yml') {
+        expand 'version': project.version
+    }
+    filesMatching('**/*.properties') {
         expand 'version': project.version
     }
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
 }
+
+shadowJar {
+    archiveFileName = "TakaroPlugin-${version}-all.jar"
+}
+
+tasks.build.dependsOn shadowJar

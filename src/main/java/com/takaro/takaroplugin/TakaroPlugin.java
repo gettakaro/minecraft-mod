@@ -1,173 +1,98 @@
 package com.takaro.takaroplugin;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import java.io.File;
+import java.io.FileInputStream;
+import java.security.KeyStore;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.List;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
+import com.takaro.takaroplugin.util.TpsTracker;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Filter;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import com.takaro.takaroplugin.WebSocket;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
 
+import com.takaro.takaroplugin.config.ConfigManager;
+import com.takaro.takaroplugin.minecraft.TakaroCommand;
+import com.takaro.takaroplugin.util.LogFilter;
+import com.takaro.takaroplugin.websocket.WSServer;
 
 public class TakaroPlugin extends JavaPlugin {
+    private WSServer server;
+    private Thread wsThread;
+
     @Override
     public void onEnable() {
-        getConfig().options().copyDefaults(true);
-        saveDefaultConfig();
-        getConfig().options().setHeader(List.of("Config file for TakaroPlugin"));
-        getConfig().options().pathSeparator('/');
-        getConfig().options().configuration().set("config-location", "./plugins/TakaroPlugin/config.yml");
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new TpsTracker(), 100L, 1L);
 
-        getLogger().info("TakaroPlugin has been enabled!");
-        int port = getConfig().getInt("websocket.port", 1680); // Default to port 1680 if not specified
-        String hostname = getConfig().getString("websocket.hostname", "0.0.0.0"); // Default to localhost if not specified
-        
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-            try {
-                WebSocket.startWebSocketServer(hostname, port, getLogger());
-            } catch (IOException | NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-        });
+        try {
+			startWS();
+		} catch (Exception e) {
+			Bukkit.getLogger().warning("Error occured while starting WebSocket Server.");
+			e.printStackTrace();
+		}
+
+        //This filter is used to read the whole console.
+		Filter f = new LogFilter(getWSServer());
+		((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger()).addFilter(f);
+		
+		getCommand("Takaro").setExecutor(new TakaroCommand(this.getDescription().getVersion()));
     }
 
-    public Location getPlayerLocation(String playerName) {
-        Player player = Bukkit.getPlayer(playerName);
-        if (player == null) {
-            return null;
-        }
+	@Override
+	public void onDisable() {
+		try {
+			server.stop();
+			wsThread = null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-        Location location = player.getLocation();
-        return new Location(location.getWorld(), location.getX(), location.getY(), location.getZ());
-    }
-    
-    public void sendMessage(String message, boolean isDirectMessage) {
-        String fullMessage = "[🗨️ Chat] Server: " + (isDirectMessage ? "[DM] " : "") + message;
+	/**
+	 * Start WebSocket server
+	 */
+	private void startWS() throws Exception {
+		// Create WebSocket server
+		server = new WSServer(ConfigManager.getInstance().getSocketAdress());
+		
+		if(ConfigManager.getInstance().isSslEnabled()) {
+			// Configure SSL
+			String STORETYPE = ConfigManager.getInstance().getStoreType();
+			String KEYSTORE = ConfigManager.getInstance().getKeyStore();
+			String STOREPASSWORD = ConfigManager.getInstance().getStorePassword();
+			String KEYPASSWORD = ConfigManager.getInstance().getKeyPassword();
+			
+			KeyStore ks = KeyStore.getInstance(STORETYPE);
+			File kf = new File(KEYSTORE);
+			ks.load(new FileInputStream(kf), STOREPASSWORD.toCharArray());
+			
+			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+			kmf.init(ks, KEYPASSWORD.toCharArray());
+			TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+			tmf.init(ks);
+			
+			SSLContext sslContext = null;
+			sslContext = SSLContext.getInstance("TLS");
+			sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+			
+			server.setWebSocketFactory(new DefaultSSLWebSocketServerFactory(sslContext));
+		}
 
-        // Emit event (assuming you have a method to handle this)
-        emitChatMessageEvent(message, isDirectMessage);
+		// Start Server
+		wsThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				server.run();
+			}
+		});
+		wsThread.start();
+	}
 
-        // Log the message
-        getLogger().info(fullMessage);
-    }
-
-    private void emitChatMessageEvent(String message, boolean isDirectMessage) {
-        // Broadcast the message to all players if it's not a direct message
-        if (!isDirectMessage) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.sendMessage("[🗨️ Chat] Server: " + message);
-            }
-        } else {
-            Player targetPlayer = Bukkit.getPlayerExact(message.split(" ")[0]);
-            if (targetPlayer != null) {
-                String directMessage = message.substring(message.indexOf(" ") + 1);
-                targetPlayer.sendMessage("[🗨️ Chat] Server: [DM] " + directMessage);
-            } else {
-                getLogger().warning("Player not found for direct message: " + message);
-            }
-        }
-    }
-
-    public void teleportPlayer(String playerName, double x, double y, double z) {
-        Player player = Bukkit.getPlayer(playerName);
-        if (player == null) {
-            getLogger().warning("Player not found: " + playerName);
-            return;
-        }
-
-        Location newLocation = new Location(player.getWorld(), x, y, z);
-        player.teleport(newLocation);
-
-        getLogger().info("Teleported " + playerName + " to " + x + ", " + y + ", " + z);
-    }
-
-    public CommandOutput executeConsoleCommand(String rawCommand) {
-        String encodedCommand = java.net.URLEncoder.encode(rawCommand, java.nio.charset.StandardCharsets.UTF_8);
-        getLogger().info("Executing command: \"" + rawCommand + "\"");
-
-        CommandOutput commandOutput = new CommandOutput("Command execution failed", false);
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-            boolean success = Bukkit.dispatchCommand(Bukkit.getConsoleSender(), encodedCommand);
-            commandOutput.rawResult = success ? "Command executed successfully" : "Command execution failed";
-            commandOutput.success = success;
-            getLogger().info("Command output: " + commandOutput.getRawResult());
-        });
-        return commandOutput;
-    }
-
-    public class CommandOutput {
-        private String rawResult;
-        private boolean success;
-
-        public CommandOutput(String rawResult, boolean success) {
-            this.rawResult = rawResult;
-            this.success = success;
-        }
-
-        public String getRawResult() {
-            return rawResult;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-    }
-
-    public void kickPlayer(String playerName, String reason) {
-        String command = "kick " + playerName + " " + reason;
-        executeConsoleCommand(command);
-    }
-
-    public void banPlayer(String playerName, String reason, String expiresAt) {
-        if (expiresAt == null || expiresAt.isEmpty()) {
-            expiresAt = "2521-01-01 00:00:00";
-        }
-
-        LocalDateTime expiresAtDate = LocalDateTime.parse(expiresAt);
-        LocalDateTime now = LocalDateTime.now();
-        Duration duration = Duration.between(now, expiresAtDate);
-
-        String unit = "minute";
-        long durationValue = duration.toMinutes();
-
-        if (durationValue >= 60) {
-            unit = "hour";
-            durationValue = duration.toHours();
-        }
-
-        if (durationValue >= 24) {
-            unit = "day";
-            durationValue = duration.toDays();
-        }
-
-        if (durationValue >= 7) {
-            unit = "week";
-            durationValue = duration.toDays() / 7;
-        }
-
-        if (durationValue >= 30) {
-            unit = "month";
-            durationValue = duration.toDays() / 30;
-        }
-
-        if (durationValue >= 365) {
-            unit = "year";
-            durationValue = duration.toDays() / 365;
-        }
-
-        String command = "ban add " + playerName + " " + durationValue + " " + unit + " " + reason;
-        executeConsoleCommand(command);
-    }
-
-    public void unbanPlayer(String playerName) {
-        String command = "ban remove " + playerName;
-        executeConsoleCommand(command);
-    }
-
-    
+	public WSServer getWSServer() {
+		return server;
+	}
 }
