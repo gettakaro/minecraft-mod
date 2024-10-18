@@ -18,7 +18,7 @@ public class ExecCommand implements WSCommand {
 	LoginManager loginManager = LoginManager.getInstance();
 
 	@Override
-	public void execute(WSServer wsServer, WebSocket conn, String command) {
+	public void execute(WSServer wsServer, WebSocket conn, String command, String requestId) {
 		ConnectedUser u = LoginManager.getInstance().getUser(conn.getRemoteSocketAddress());
 		if(u == null || u.getUserType() != UserType.ADMIN) {
 			if(u != null)

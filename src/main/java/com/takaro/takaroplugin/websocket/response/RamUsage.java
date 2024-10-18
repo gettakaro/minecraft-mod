@@ -8,12 +8,14 @@ public class RamUsage implements JSONOutput {
 	private final long free;
 	private final long used;
 	private final long max;
+	private final String requestId;
 
-	public RamUsage(String message, long free, long used, long max) {
+	public RamUsage(String message, long free, long used, long max, String requestId) {
 		this.message = message;
 		this.free = free;
 		this.used = used;
 		this.max = max;
+		this.requestId = requestId;
 	}
 
 	@Override
@@ -59,6 +61,7 @@ public class RamUsage implements JSONOutput {
 		object.addProperty("used", getUsed());
 		object.addProperty("max", getMax());
 		object.addProperty("message", getMessage());
+		object.addProperty("requestId", requestId);
 		return object.toString();
 	}
 

@@ -72,5 +72,4 @@ public class LoggedIn implements JSONOutput {
 		object.addProperty("message", getMessage());
 		return object.toString();
 	}
-
 }

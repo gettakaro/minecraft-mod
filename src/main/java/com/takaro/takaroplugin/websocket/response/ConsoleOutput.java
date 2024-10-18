@@ -6,10 +6,12 @@ public class ConsoleOutput implements JSONOutput {
 
 	private final String message;
 	private final String time;
+	private final String requestId;
 	
-	public ConsoleOutput(String message, String time) {
+	public ConsoleOutput(String message, String time, String requestId) {
 		this.message = message;
 		this.time = time;
+		this.requestId = requestId;
 	}
 	
 	@Override
@@ -21,7 +23,7 @@ public class ConsoleOutput implements JSONOutput {
 	public String getMessage() {
 		return message;
 	}
-	
+
 	public String getTime() {
 		return time;
 	}
@@ -33,7 +35,10 @@ public class ConsoleOutput implements JSONOutput {
 		object.addProperty("statusDescription", "Console Output");
 		object.addProperty("time", getTime());
 		object.addProperty("message", getMessage());
+		object.addProperty("requestId", requestId);
 		return object.toString();
 	}
+
+	
 
 }

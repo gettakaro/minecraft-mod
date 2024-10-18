@@ -6,10 +6,12 @@ public class Tps implements JSONOutput {
 
     private final String message;
     private final double tps;
+    private final String requestId;
 
-    public Tps(String message, double tps) {
+    public Tps(String message, double tps, String requestId) {
         this.message = message;
         this.tps = tps;
+        this.requestId = requestId;
     }
 
     @Override
@@ -37,6 +39,7 @@ public class Tps implements JSONOutput {
         object.addProperty("statusDescription", "TPS Usage");
         object.addProperty("tps", getTps());
         object.addProperty("message", getMessage());
+        object.addProperty("requestId", requestId);
         return object.toString();
     }
 

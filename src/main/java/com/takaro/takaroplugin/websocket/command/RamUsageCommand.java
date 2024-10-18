@@ -8,7 +8,7 @@ import com.takaro.takaroplugin.websocket.response.RamUsage;
 public class RamUsageCommand implements WSCommand {
 
 	@Override
-	public void execute(WSServer wsServer, WebSocket conn, String params) {
+	public void execute(WSServer wsServer, WebSocket conn, String params, String requestId) {
 		Runtime r = Runtime.getRuntime();
 		
 		long free = r.freeMemory() / 1024 / 1024;
@@ -20,7 +20,8 @@ public class RamUsageCommand implements WSCommand {
                 free + " free, " + used + " used, " + max + " maximum memory.",
 				free,
 				used,
-				max
+				max,
+				requestId
 			));
 	}
 }

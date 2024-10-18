@@ -15,7 +15,7 @@ import com.takaro.takaroplugin.websocket.response.ConsoleOutput;
 public class ReadLogFileCommand implements WSCommand{
 
 	@Override
-	public void execute(WSServer wsServer, WebSocket conn, String params) {
+	public void execute(WSServer wsServer, WebSocket conn, String params, String requestId) {
 		List<String> lines = null;
 		try {
 			 lines = Files.readAllLines(Paths.get("logs/latest.log"), StandardCharsets.UTF_8);
@@ -34,6 +34,6 @@ public class ReadLogFileCommand implements WSCommand{
 		}
 		
 		for(String line : lines)
-			wsServer.sendToClient(conn, new ConsoleOutput(line, null));
+			wsServer.sendToClient(conn, new ConsoleOutput(line, null, requestId));
 	}
 }

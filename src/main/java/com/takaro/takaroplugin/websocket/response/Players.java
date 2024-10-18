@@ -11,12 +11,14 @@ public class Players implements JSONOutput {
 	private final int connectedPlayers;
 	private final int maxPlayers;
 	private final List<String> connectedPlayersList;
+	private final String requestId;
 	
-	public Players(String message, int connectedPlayers, int maxPlayers, List<String> connectedPlayersList) {
+	public Players(String message, int connectedPlayers, int maxPlayers, List<String> connectedPlayersList, String requestId) {
 		this.message = message;
 		this.connectedPlayers = connectedPlayers;
 		this.maxPlayers = maxPlayers;
 		this.connectedPlayersList = connectedPlayersList;
+		this.requestId = requestId;
 	}
 	
 	@Override
@@ -46,6 +48,7 @@ public class Players implements JSONOutput {
 		object.addProperty("maxPlayers", getMaxPlayers());
 		object.addProperty("players", new Gson().toJson(connectedPlayersList));
 		object.addProperty("message", getMessage());
+		object.addProperty("requestId", requestId);
 		return object.toString();
 	}
 

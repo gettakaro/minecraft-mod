@@ -5,5 +5,5 @@ import org.java_websocket.WebSocket;
 import com.takaro.takaroplugin.websocket.WSServer;
 
 public interface WSCommand {
-	void execute(WSServer wsServer, WebSocket conn, String params);
+	void execute(WSServer wsServer, WebSocket conn, String params, String requestId);
 }

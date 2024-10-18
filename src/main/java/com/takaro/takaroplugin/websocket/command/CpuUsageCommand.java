@@ -15,10 +15,10 @@ import com.takaro.takaroplugin.websocket.response.CpuUsage;
 public class CpuUsageCommand implements WSCommand {
 
 	@Override
-	public void execute(WSServer wsServer, WebSocket conn, String params) {
+	public void execute(WSServer wsServer, WebSocket conn, String params, String requestId) {
 		try {
 			double usage = getProcessCpuLoad();
-			wsServer.sendToClient(conn, new CpuUsage("Usage is " + usage, usage));
+			wsServer.sendToClient(conn, new CpuUsage("Usage is " + usage, usage, requestId));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

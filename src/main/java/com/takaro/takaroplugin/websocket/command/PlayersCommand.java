@@ -13,7 +13,7 @@ import com.takaro.takaroplugin.websocket.response.Players;
 public class PlayersCommand implements WSCommand{
 
 	@Override
-	public void execute(WSServer wsServer, WebSocket conn, String params) {
+	public void execute(WSServer wsServer, WebSocket conn, String params, String requestId) {
 		List<String> connectedPlayersList = new ArrayList<String>();
 		for(Player player : Bukkit.getOnlinePlayers()) {
 			connectedPlayersList.add(player.getName());
@@ -27,7 +27,8 @@ public class PlayersCommand implements WSCommand{
                 "Connected " + connectedPlayers + " players for a maximum of " + maxPlayers,
 				connectedPlayers,
 				maxPlayers,
-				connectedPlayersList
+				connectedPlayersList,
+				requestId
 			));
 	}
 	

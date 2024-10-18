@@ -14,6 +14,7 @@ public class JsonUtils {
 	public final static String COMMAND_PROPERTY = "command";
 	public final static String TOKEN_PROPERTY = "token";
 	public final static String PARAMS_PROPERTY = "params";
+	public final static String REQUEST_ID = "requestId";
 	
 	/**
 	 * Check that a given String is a valid JSON

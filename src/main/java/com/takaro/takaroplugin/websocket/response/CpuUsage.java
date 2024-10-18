@@ -6,10 +6,14 @@ public class CpuUsage implements JSONOutput {
 
 	private final String message;
 	private final double usage;
+	private final String requestId;
 
-	public CpuUsage(String message, double usage) {
+
+	public CpuUsage(String message, double usage, String requestId) {
 		this.message = message;
 		this.usage = usage;
+		this.requestId = requestId;
+		
 	}
 
 	@Override
@@ -37,6 +41,7 @@ public class CpuUsage implements JSONOutput {
 		object.addProperty("statusDescription", "CPU Usage");
 		object.addProperty("usage", getUsage());
 		object.addProperty("message", getMessage());
+		object.addProperty("requestId", requestId);
 		return object.toString();
 	}
 	
