@@ -1,6 +1,7 @@
 package com.takaro.takaroplugin.websocket.response;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -10,10 +11,10 @@ public class Players implements JSONOutput {
 	private final String message;
 	private final int connectedPlayers;
 	private final int maxPlayers;
-	private final List<String> connectedPlayersList;
+	private final List<Map<String, String>> connectedPlayersList;
 	private final String requestId;
 	
-	public Players(String message, int connectedPlayers, int maxPlayers, List<String> connectedPlayersList, String requestId) {
+	public Players(String message, int connectedPlayers, int maxPlayers, List<Map<String, String>> connectedPlayersList, String requestId) {
 		this.message = message;
 		this.connectedPlayers = connectedPlayers;
 		this.maxPlayers = maxPlayers;
