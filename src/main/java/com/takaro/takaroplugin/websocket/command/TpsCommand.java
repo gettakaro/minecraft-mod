@@ -11,10 +11,10 @@ import java.lang.reflect.InvocationTargetException;
 public class TpsCommand implements WSCommand {
 
 	@Override
-	public void execute(WSServer wsServer, WebSocket conn, String params) {
+	public void execute(WSServer wsServer, WebSocket conn, String params, String requestId) {
 		try {
 			double tps = getTps()[0];
-			wsServer.sendToClient(conn, new Tps(tps + " ticks.", tps));
+			wsServer.sendToClient(conn, new Tps(tps + " ticks.", tps, requestId));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

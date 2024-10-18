@@ -16,7 +16,7 @@ import com.takaro.takaroplugin.websocket.response.LoggedIn;
 public class LogInCommand implements WSCommand {
 	
 	@Override
-	public void execute(WSServer wsServer, WebSocket conn, String password) {
+	public void execute(WSServer wsServer, WebSocket conn, String password, String requestId) {
 		// If user is logged in, then return.
 		if (LoginManager.getInstance().isSocketConnected(conn.getRemoteSocketAddress()))
 			return;

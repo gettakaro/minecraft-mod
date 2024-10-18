@@ -6,10 +6,12 @@ public class UnknownCommand implements JSONOutput {
 
 	private final String message;
 	private final String respondsTo;
+	private final String requestId;
 	
-	public UnknownCommand(String message, String respondsTo) {
+	public UnknownCommand(String message, String respondsTo, String requestId) {
 		this.message = message;
 		this.respondsTo = respondsTo;
+		this.requestId = requestId;
 	}
 	
 	@Override
@@ -37,6 +39,7 @@ public class UnknownCommand implements JSONOutput {
 		object.addProperty("statusDescription", "Unknown Command");
 		object.addProperty("respondsTo", getRespondsTo());
 		object.addProperty("message", getMessage());
+		object.addProperty("requestId", requestId);
 		return object.toString();
 	}
 }

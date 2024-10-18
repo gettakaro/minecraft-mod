@@ -54,13 +54,14 @@ public class WSServer extends WebSocketServer {
         String wsCommand = JsonUtils.getStringProperty(message, JsonUtils.COMMAND_PROPERTY);
         String wsToken = JsonUtils.getStringProperty(message, JsonUtils.TOKEN_PROPERTY);
         String wsCommandParams = JsonUtils.getStringProperty(message, JsonUtils.PARAMS_PROPERTY);
+        String wsRequestId = JsonUtils.getStringProperty(message, JsonUtils.REQUEST_ID);
 
         // Run command
         WSCommand cmd = commands.get(wsCommand);
 
         if (cmd == null) {
             // Command does not exist
-            sendToClient(conn, new UnknownCommand("Unknown command", message));
+            sendToClient(conn, new UnknownCommand("Unknown command", message, wsRequestId));
             Bukkit.getLogger().info("Unknown Command: " + message);
         } else if (!wsCommand.equals("LOGIN")
                 && !LoginManager.getInstance().isLoggedIn(conn.getRemoteSocketAddress(), wsToken)) {
@@ -68,7 +69,7 @@ public class WSServer extends WebSocketServer {
             sendToClient(conn, new LoginRequired("Forbidden"));
             Bukkit.getLogger().warning(conn.getRemoteSocketAddress() + " tried to run " + message + " while not logged in!");
         } else {
-            cmd.execute(this, conn, wsCommandParams);
+            cmd.execute(this, conn, wsCommandParams, wsRequestId);
         }
     }
 
@@ -95,7 +96,7 @@ public class WSServer extends WebSocketServer {
         Collection<WebSocket> connections = getConnections();
         for (WebSocket connection : connections) {
             if (LoginManager.getInstance().isSocketConnected(connection.getRemoteSocketAddress()))
-                sendToClient(connection, new ConsoleOutput(line, DateTimeUtils.getTimeAsString()));
+                sendToClient(connection, new ConsoleOutput(line, DateTimeUtils.getTimeAsString(), null));
         }
     }
 
